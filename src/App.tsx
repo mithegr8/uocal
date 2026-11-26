@@ -11,8 +11,8 @@ import { buildGridItems } from './components/buildGridItems'
 import { localeOf } from './components/format'
 import { useLanguage } from './i18n/context'
 import { addDays, startOfWeek } from './lib/dates'
-import { sampleCalendars, sampleEvents } from './data/sample'
-import type { Calendar, CalendarEvent } from './types'
+import { useCalendarData } from './lib/store'
+import type { CalendarEvent } from './types'
 
 const AGENDA_DAYS = 14
 
@@ -29,39 +29,20 @@ function App() {
   const [view, setView] = useState<View>('week')
   const [focusDate, setFocusDate] = useState(today)
 
-  // The student's calendars and events. (Saving them is Lane B's job: tasks B1.2 / B2.3.)
-  const [calendars, setCalendars] = useState<Calendar[]>(sampleCalendars)
-  const [events, setEvents] = useState<CalendarEvent[]>(sampleEvents)
+  // The student's calendars and events, from the data store (src/lib/store.ts).
+  const data = useCalendarData()
+  const { calendars, events, toggleCalendar, addCalendar, updateCalendar, deleteCalendar } = data
   const [form, setForm] = useState<FormState>({ mode: 'closed' })
 
-  // ---- Events ----
+  // ---- Events: save or delete, then close the form ----
   function saveEvent(event: CalendarEvent) {
-    const exists = events.some((e) => e.id === event.id)
-    setEvents(exists ? events.map((e) => (e.id === event.id ? event : e)) : [...events, event])
+    data.saveEvent(event)
     setForm({ mode: 'closed' })
   }
 
   function deleteEvent(eventId: string) {
-    setEvents(events.filter((e) => e.id !== eventId))
+    data.deleteEvent(eventId)
     setForm({ mode: 'closed' })
-  }
-
-  // ---- Calendars ----
-  function toggleCalendar(calendarId: string) {
-    setCalendars(calendars.map((c) => (c.id === calendarId ? { ...c, visible: !c.visible } : c)))
-  }
-
-  function addCalendar(name: string, color: string) {
-    setCalendars([...calendars, { id: crypto.randomUUID(), studentId: 'me', name, kind: 'other', color, visible: true }])
-  }
-
-  function updateCalendar(calendarId: string, changes: { name: string; color: string }) {
-    setCalendars(calendars.map((c) => (c.id === calendarId ? { ...c, ...changes } : c)))
-  }
-
-  function deleteCalendar(calendarId: string) {
-    setCalendars(calendars.filter((c) => c.id !== calendarId))
-    setEvents(events.filter((e) => e.calendarId !== calendarId)) // its events go too
   }
 
   // ---- Moving through time: a week, a month or two weeks at a time ----

@@ -1,3 +1,5 @@
+import type { DateString, TimeString, Weekday } from '../types'
+
 // Small helpers for working with dates.
 
 // Returns a copy of the date moved by some number of days (negative = back).
@@ -35,4 +37,25 @@ export function toDateString(date: Date): string {
 export function toMinutes(time: string): number {
   const [hours, minutes] = time.split(':').map(Number)
   return hours * 60 + minutes
+}
+
+// 810 → "13:30", the other way round. The end of the day, 1440, is "24:00".
+export function minutesToTime(total: number): TimeString {
+  const hours = String(Math.floor(total / 60)).padStart(2, '0')
+  const minutes = String(total % 60).padStart(2, '0')
+  return `${hours}:${minutes}`
+}
+
+// "2026-11-12" → local midnight that day.
+// Don't use new Date("2026-11-12"): that is UTC, so it lands on Nov 11 in Ottawa.
+export function parseDate(text: DateString): Date {
+  const [year, month, day] = text.split('-').map(Number)
+  return new Date(year, month - 1, day)
+}
+
+const WEEKDAYS: Weekday[] = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+
+// The weekday name of a date, e.g. "Mon".
+export function weekdayOf(date: Date): Weekday {
+  return WEEKDAYS[(date.getDay() + 6) % 7]
 }

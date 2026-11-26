@@ -1,5 +1,5 @@
-import type { CalendarEvent, Weekday } from '../types'
-import { addDays, toDateString } from './dates'
+import type { Calendar, CalendarEvent, Weekday } from '../types'
+import { addDays, toDateString, weekdayOf } from './dates'
 
 const WEEKDAYS: Weekday[] = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
@@ -24,4 +24,18 @@ export function occurrencesInWeek(event: CalendarEvent, weekStart: Date): Date[]
   }
 
   return result
+}
+
+// Does the event happen on this one day? Same rules as occurrencesInWeek.
+export function occursOn(event: CalendarEvent, day: Date): boolean {
+  const dayString = toDateString(day)
+  if (dayString < event.date) return false // before it starts
+  if (!event.repeat) return dayString === event.date
+  return dayString <= event.repeat.until && event.repeat.days.includes(weekdayOf(day))
+}
+
+// Keeps only the events whose calendar is ticked (visible), like the grid does.
+export function getVisibleEvents(events: CalendarEvent[], calendars: Calendar[]): CalendarEvent[] {
+  const visibleIds = new Set(calendars.filter((c) => c.visible).map((c) => c.id))
+  return events.filter((event) => visibleIds.has(event.calendarId))
 }

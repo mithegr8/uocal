@@ -1,31 +1,22 @@
-import { HOURS, HOUR_HEIGHT } from './gridConfig'
+import { HOURS, HOUR_HEIGHT, type GridItem } from './gridConfig'
+import EventBlock from './EventBlock'
+import { layoutDay } from './layoutDay'
 
 type DayColumnProps = {
-  name: string
-  date: number
-  isToday: boolean
+  items: GridItem[] // this day's timed events only
+  formatStart: (time: string) => string
+  onOpen: (eventId: string) => void
 }
 
-function DayColumn({ name, date, isToday }: DayColumnProps) {
+// The 24 hour boxes of one day, with its events placed on top.
+function DayColumn({ items, formatStart, onOpen }: DayColumnProps) {
   return (
-    <div className="border-l border-stone-200">
-      {/* Day name + date. "sticky top-0" keeps it visible while you scroll. */}
-      <div className="sticky top-0 z-10 h-16 flex flex-col items-center justify-center border-b border-stone-200 bg-white">
-        <span className="text-xs uppercase tracking-wider text-stone-400">{name}</span>
-        <span
-          className={
-            isToday
-              ? 'mt-1 w-8 h-8 rounded-full bg-rose-500 text-white flex items-center justify-center font-semibold'
-              : 'mt-1 w-8 h-8 flex items-center justify-center text-stone-700'
-          }
-        >
-          {date}
-        </span>
-      </div>
-
-      {/* One empty box per hour, same count and height as the hour labels */}
+    <div className="relative border-l border-stone-200">
       {HOURS.map((hour) => (
         <div key={hour} className="border-b border-stone-100" style={{ height: HOUR_HEIGHT }} />
+      ))}
+      {layoutDay(items).map((item) => (
+        <EventBlock key={item.id} item={item} startLabel={formatStart(item.start)} onOpen={onOpen} />
       ))}
     </div>
   )

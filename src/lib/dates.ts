@@ -23,3 +23,16 @@ export function isSameDay(a: Date, b: Date): boolean {
     a.getDate() === b.getDate()
   )
 }
+
+// Date → "YYYY-MM-DD", the format our data uses.
+export function toDateString(date: Date): string {
+  const month = String(date.getMonth() + 1).padStart(2, '0') // getMonth(): January = 0
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${date.getFullYear()}-${month}-${day}`
+}
+
+// "13:30" → 810 (minutes since midnight). Makes times easy to compare and place.
+export function toMinutes(time: string): number {
+  const [hours, minutes] = time.split(':').map(Number)
+  return hours * 60 + minutes
+}
